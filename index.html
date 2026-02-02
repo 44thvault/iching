@@ -2,37 +2,55 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Lucky Cat I Ching</title>
   <style>
     body {
       font-family: monospace;
-      background: #0f1115;
+      background: radial-gradient(circle at top, #1a1d26, #0f1115);
       color: #f2f2f2;
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 20px;
+      padding: 16px;
+      max-width: 480px;
+      margin: 0 auto;
+      min-height: 100vh;
     }
     .cat {
       white-space: pre;
-      font-size: 14px;
+      font-size: clamp(10px, 3.5vw, 14px);
       line-height: 1.2;
-      margin-bottom: 16px;
+      margin-bottom: 12px;
+      text-align: center;
+      transition: transform 0.15s ease;
     }
+    .cat.paw { transform: translateY(-2px) rotate(-1deg); }
     button, select {
       background: #ffd54a;
       border: none;
-      padding: 10px 16px;
-      font-size: 14px;
+      padding: 16px 18px;
+      font-size: 16px;
       cursor: pointer;
-      margin: 6px;
+      margin: 8px 0;
+      width: 100%;
+      max-width: 320px;
+      border-radius: 10px;
+      box-shadow: 0 6px 0 #c9a900;
     }
-    button:hover { background: #ffec8b; }
-    .coins, .hexagram, .result {
-      margin-top: 16px;
-      text-align: center;
+    button:active { transform: translateY(2px); box-shadow: 0 4px 0 #c9a900; }
+    .coins, .hexagram, .result { margin-top: 14px; text-align: center; }
+    .line { font-size: clamp(16px, 5vw, 20px); letter-spacing: 2px; }
+    .coin {
+      display: inline-block;
+      margin: 0 4px;
+      animation: flip 0.6s ease;
     }
-    .line { font-size: 18px; }
+    @keyframes flip {
+      0% { transform: rotateY(0deg); }
+      50% { transform: rotateY(180deg); }
+      100% { transform: rotateY(360deg); }
+    }
   </style>
 </head>
 <body>
@@ -70,103 +88,7 @@ const hexagramIndex = {
   "110110":57,"011011":58,"010011":59,"110010":60,"110011":61,"001100":62,"101010":63,"010101":64
 };
 
-// All 64 hexagrams — short modern interpretations
-const hexagramMeanings = {
-  1:{name:"The Creative",business:"Lead boldly. Momentum favors initiative.",relationship:"Be direct and confident.",yesno:"Yes."},
-  2:{name:"The Receptive",business:"Support and adapt.",relationship:"Nurture and listen.",yesno:"Yes, with patience."},
-  3:{name:"Difficulty at the Beginning",business:"Early chaos, future gain.",relationship:"Awkward start.",yesno:"Not yet."},
-  4:{name:"Youthful Folly",business:"Seek guidance.",relationship:"Learn from mistakes.",yesno:"No."},
-  5:{name:"Waiting",business:"Timing matters.",relationship:"Let it unfold.",yesno:"Maybe."},
-  6:{name:"Conflict",business:"Avoid escalation.",relationship:"Tension present.",yesno:"No."},
-  7:{name:"The Army",business:"Discipline brings success.",relationship:"Shared purpose.",yesno:"Yes."},
-  8:{name:"Holding Together",business:"Choose allies wisely.",relationship:"Commitment strengthens.",yesno:"Yes."},
-  9:{name:"Small Taming",business:"Small gains only.",relationship:"Gentle progress.",yesno:"Maybe."},
-  10:{name:"Treading",business:"Proceed carefully.",relationship:"Respect boundaries.",yesno:"Yes, cautiously."},
-  11:{name:"Peace",business:"Expansion favored.",relationship:"Harmony flows.",yesno:"Yes."},
-  12:{name:"Standstill",business:"Stagnation.",relationship:"Distance needed.",yesno:"No."},
-  13:{name:"Fellowship",business:"Collaboration wins.",relationship:"Strong partnership.",yesno:"Yes."},
-  14:{name:"Great Possession",business:"Use abundance wisely.",relationship:"Confidence attracts.",yesno:"Yes."},
-  15:{name:"Modesty",business:"Quiet success.",relationship:"Humility deepens bonds.",yesno:"Yes."},
-  16:{name:"Enthusiasm",business:"Momentum builds.",relationship:"Joy rises.",yesno:"Yes."},
-  17:{name:"Following",business:"Adapt gracefully.",relationship:"Go with the flow.",yesno:"Yes."},
-  18:{name:"Work on the Decayed",business:"Fix what’s broken.",relationship:"Heal old wounds.",yesno:"Yes, if addressed."},
-  19:{name:"Approach",business:"Opportunity nears.",relationship:"Closeness grows.",yesno:"Yes."},
-  20:{name:"Contemplation",business:"Observe first.",relationship:"Gain perspective.",yesno:"Maybe."},
-  21:{name:"Biting Through",business:"Decisive action.",relationship:"Clear the air.",yesno:"Yes."},
-  22:{name:"Grace",business:"Presentation matters.",relationship:"Charm helps.",yesno:"Yes."},
-  23:{name:"Splitting Apart",business:"Structure fails.",relationship:"Separation.",yesno:"No."},
-  24:{name:"Return",business:"Fresh start.",relationship:"Reconnection.",yesno:"Yes."},
-  25:{name:"Innocence",business:"Act honestly.",relationship:"Trust.",yesno:"Yes."},
-  26:{name:"Great Taming",business:"Restraint builds power.",relationship:"Patience.",yesno:"Maybe."},
-  27:{name:"Nourishment",business:"Mind resources.",relationship:"Words matter.",yesno:"Maybe."},
-  28:{name:"Great Excess",business:"Rebalance urgently.",relationship:"Too much strain.",yesno:"No."},
-  29:{name:"The Abyss",business:"Risky path.",relationship:"Emotional depth.",yesno:"No."},
-  30:{name:"The Clinging",business:"Clarity and focus.",relationship:"Mutual illumination.",yesno:"Yes."},
-  31:{name:"Influence",business:"Soft power works.",relationship:"Attraction grows.",yesno:"Yes."},
-  32:{name:"Duration",business:"Long-term effort.",relationship:"Stability.",yesno:"Yes."},
-  33:{name:"Retreat",business:"Strategic withdrawal.",relationship:"Create space.",yesno:"No."},
-  34:{name:"Great Power",business:"Control strength.",relationship:"Strong emotions.",yesno:"Yes."},
-  35:{name:"Progress",business:"Advancement.",relationship:"Improvement.",yesno:"Yes."},
-  36:{name:"Darkening of the Light",business:"Stay low-profile.",relationship:"Protect yourself.",yesno:"No."},
-  37:{name:"The Family",business:"Order matters.",relationship:"Domestic harmony.",yesno:"Yes."},
-  38:{name:"Opposition",business:"Different paths.",relationship:"Accept differences.",yesno:"No."},
-  39:{name:"Obstruction",business:"Delays ahead.",relationship:"Stress present.",yesno:"No."},
-  40:{name:"Deliverance",business:"Relief comes.",relationship:"Resolution.",yesno:"Yes."},
-  41:{name:"Decrease",business:"Simplify.",relationship:"Let go.",yesno:"Maybe."},
-  42:{name:"Increase",business:"Growth through giving.",relationship:"Mutual support.",yesno:"Yes."},
-  43:{name:"Breakthrough",business:"Speak truth.",relationship:"Honesty required.",yesno:"Yes."},
-  44:{name:"Coming to Meet",business:"Unexpected influence.",relationship:"Power imbalance.",yesno:"No."},
-  45:{name:"Gathering Together",business:"Collective strength.",relationship:"Community support.",yesno:"Yes."},
-  46:{name:"Pushing Upward",business:"Steady progress.",relationship:"Gradual closeness.",yesno:"Yes."},
-  47:{name:"Oppression",business:"Endure wisely.",relationship:"Emotional strain.",yesno:"No."},
-  48:{name:"The Well",business:"Shared resources.",relationship:"Mutual giving.",yesno:"Yes."},
-  49:{name:"Revolution",business:"Radical change.",relationship:"Transform or end.",yesno:"Yes."},
-  50:{name:"The Cauldron",business:"Transformation.",relationship:"Growth together.",yesno:"Yes."},
-  51:{name:"The Arousing",business:"Shock awakens.",relationship:"Sudden change.",yesno:"Maybe."},
-  52:{name:"Keeping Still",business:"Pause action.",relationship:"Stillness heals.",yesno:"No."},
-  53:{name:"Development",business:"Slow growth.",relationship:"Trust builds.",yesno:"Yes."},
-  54:{name:"The Marrying Maiden",business:"Secondary role.",relationship:"Unequal footing.",yesno:"No."},
-  55:{name:"Abundance",business:"Peak visibility.",relationship:"Full emotions.",yesno:"Yes."},
-  56:{name:"The Wanderer",business:"Temporary phase.",relationship:"Unsettled.",yesno:"Maybe."},
-  57:{name:"The Gentle",business:"Subtle influence.",relationship:"Soft persistence.",yesno:"Yes."},
-  58:{name:"The Joyous",business:"Open communication.",relationship:"Shared happiness.",yesno:"Yes."},
-  59:{name:"Dispersion",business:"Dissolve blocks.",relationship:"Healing distance.",yesno:"Yes."},
-  60:{name:"Limitation",business:"Set limits.",relationship:"Clear rules.",yesno:"Maybe."},
-  61:{name:"Inner Truth",business:"Integrity wins.",relationship:"Deep honesty.",yesno:"Yes."},
-  62:{name:"Small Exceeding",business:"Mind details.",relationship:"Caution pays.",yesno:"Maybe."},
-  63:{name:"After Completion",business:"Stay alert.",relationship:"Balance achieved.",yesno:"Yes."},
-  64:{name:"Before Completion",business:"Almost there.",relationship:"Unfinished business.",yesno:"Not yet."}
-};
-
-function coin() {
-  return Math.random() < 0.5 ? 2 : 3;
-}
-
-function throwCoins() {
-  const mode = document.getElementById('mode').value;
-  let lines = [];
-  let coinText = '';
-
-  for (let i = 0; i < 6; i++) {
-    const c1 = coin(), c2 = coin(), c3 = coin();
-    const sum = c1 + c2 + c3;
-    const line = (sum === 7 || sum === 9) ? 1 : 0;
-    lines.push(line);
-    coinText += `Line ${6 - i}: ${c1}, ${c2}, ${c3} → ${sum}<br>`;
-  }
-
-  const key = lines.join('');
-  const number = hexagramIndex[key];
-  const hex = hexagramMeanings[number];
-
-  document.getElementById('coins').innerHTML = coinText;
-  document.getElementById('hexagram').innerHTML = lines.slice().reverse()
-    .map(l => `<div class='line'>${l ? '━━━━━━━' : '━━━ ━━━'}</div>`).join('');
-
-  document.getElementById('result').innerHTML =
-    `<strong>Hexagram #${number} — ${hex.name}</strong><br>${hex[mode]}`;
-}
-</script>
+const hexagramMeanings = 
 
 </body>
 </html>
