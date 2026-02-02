@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Lucky Cat I Ching</title>
+  <style>
+    body {
+      font-family: monospace;
+      background: #0f1115;
+      color: #f2f2f2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+    .cat {
+      white-space: pre;
+      font-size: 14px;
+      line-height: 1.2;
+      margin-bottom: 16px;
+    }
+    button, select {
+      background: #ffd54a;
+      border: none;
+      padding: 10px 16px;
+      font-size: 14px;
+      cursor: pointer;
+      margin: 6px;
+    }
+    button:hover { background: #ffec8b; }
+    .coins, .hexagram, .result {
+      margin-top: 16px;
+      text-align: center;
+    }
+    .line { font-size: 18px; }
+  </style>
+</head>
+<body>
+
+<div class="cat">
+  /\\_/\\
+ ( o   o )   < Lucky Cat >
+  =  ^  =    flipping coins
+  |  ___|
+  | |   |
+</div>
+
+<select id="mode">
+  <option value="business">Business</option>
+  <option value="relationship">Relationship</option>
+  <option value="yesno">Yes / No</option>
+</select>
+
+<button onclick="throwCoins()">Throw Coins</button>
+
+<div class="coins" id="coins"></div>
+<div class="hexagram" id="hexagram"></div>
+<div class="result" id="result"></div>
+
+<script>
+// Basic hexagram meanings (very short + modernized)
+const hexagrams = {
+  "111111": { name: "1 – The Creative", business: "Strong momentum. Lead boldly.", relationship: "Take initiative, be clear.", yesno: "Yes." },
+  "000000": { name: "2 – The Receptive", business: "Support and adapt.", relationship: "Be patient and nurturing.", yesno: "Yes, but wait." },
+  "010001": { name: "3 – Difficulty at the Beginning", business: "Early chaos, long-term gain.", relationship: "Awkward start, stay honest.", yesno: "Not yet." },
+  "100010": { name: "4 – Youthful Folly", business: "Learn before acting.", relationship: "Misunderstandings likely.", yesno: "No." },
+  // Fallback used for the rest
+};
+
+function coin() {
+  // heads = 3, tails = 2
+  return Math.random() < 0.5 ? 2 : 3;
+}
+
+function throwCoins() {
+  const mode = document.getElementById('mode').value;
+  let lines = [];
+  let coinText = '';
+
+  for (let i = 0; i < 6; i++) {
+    const c1 = coin();
+    const c2 = coin();
+    const c3 = coin();
+    const sum = c1 + c2 + c3;
+
+    // 6 = old yin, 7 = young yang, 8 = young yin, 9 = old yang
+    let line = (sum === 7 || sum === 9) ? 1 : 0;
+    lines.push(line);
+    coinText += `Line ${6 - i}: ${c1}, ${c2}, ${c3} → ${sum}<br>`;
+  }
+
+  const key = lines.join('');
+  const hex = hexagrams[key] || {
+    name: "Unknown Hexagram",
+    business: "Mixed signals. Stay flexible.",
+    relationship: "Clarity comes with time.",
+    yesno: "Unclear. Ask again later."
+  };
+
+  document.getElementById('coins').innerHTML = coinText;
+
+  document.getElementById('hexagram').innerHTML = lines
+    .slice()
+    .reverse()
+    .map(l => `<div class='line'>${l ? '━━━━━━━' : '━━━ ━━━'}</div>`)
+    .join('');
+
+  document.getElementById('result').innerHTML = `<strong>${hex.name}</strong><br>${hex[mode]}`;
+}
+</script>
+
+</body>
+</html>
