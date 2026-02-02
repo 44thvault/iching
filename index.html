@@ -3,163 +3,215 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Lucky Cat I Ching</title>
+<title>I Ching Kitten</title>
+<link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
 <style>
-body{
-  font-family: monospace;
-  background:#0f1115;
-  color:#f2f2f2;
-  margin:0;
-  padding:16px;
-  display:flex;
-  justify-content:center;
-}
-.container{max-width:420px;width:100%;text-align:center;}
-.cat{white-space:pre;font-size:12px;line-height:1.1;margin-bottom:12px;}
-select,button{
-  width:100%;padding:16px;margin-top:10px;
-  font-size:16px;border-radius:12px;border:none;
-  background:#ffd54a;box-shadow:0 6px 0 #c9a900;
-}
-button:active{transform:translateY(2px);box-shadow:0 4px 0 #c9a900;}
-.coins{margin-top:14px;font-size:14px;}
-.hexagram{margin-top:14px;}
-.line{font-size:18px;letter-spacing:2px;}
-.changing{color:#ff9;}
-.result{margin-top:12px;font-size:14px;}
-hr{border:none;border-top:1px solid #444;margin:12px 0;}
+  body {
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    background: radial-gradient(circle at top, #111 0%, #000 60%);
+    color: #eaeaea;
+    font-family: monospace;
+    display: flex;
+    justify-content: center;
+  }
+
+  .container {
+    max-width: 520px;
+    width: 100%;
+    padding: 1rem;
+    text-align: center;
+  }
+
+  .matrix-header {
+    font-family: 'VT323', monospace;
+    font-size: clamp(2.5rem, 6vw, 4rem);
+    text-align: center;
+    width: 100%;
+    padding-left: 0.25em;
+    color: #00ff9c;
+    letter-spacing: 0.25em;
+    margin: 1rem 0 1.2rem 0;
+    text-shadow:
+      0 0 5px rgba(0,255,156,0.8),
+      0 0 15px rgba(0,255,156,0.6),
+      0 0 30px rgba(0,255,156,0.4);
+  }
+
+  pre.cat {
+    font-family: monospace;
+    font-size: 16px;
+    line-height: 1.1;
+    white-space: pre;
+    margin: 0 auto 1.2rem auto;
+    color: #ffe066;
+  }
+
+  select, button {
+    width: 100%;
+    font-size: 1.1rem;
+    padding: 0.8rem;
+    margin: 0.6rem 0;
+    border-radius: 10px;
+    border: none;
+  }
+
+  select {
+    background: #ffd84d;
+  }
+
+  button {
+    background: #ffd84d;
+    cursor: pointer;
+    font-weight: bold;
+  }
+
+  .coins {
+    margin-top: 0.8rem;
+    font-size: 1rem;
+    letter-spacing: 0.2em;
+  }
+
+  .hex {
+    margin-top: 1rem;
+    padding: 1rem;
+    border: 1px solid #333;
+    border-radius: 10px;
+    background: #0b0b0b;
+  }
+
+  .changing {
+    color: #ffd84d;
+    font-weight: bold;
+  }
 </style>
 </head>
 <body>
-<div class="container">
-<pre class="cat">     
-  /\\_/\\
- ( o   o )
-  =  ^  = 
+  <div class="container">
+    <header class="matrix-header">I&nbsp;CHING&nbsp;KITTEN</header>
+
+<pre class="cat">  /\_/\
+ ( o   o )  &lt; lucky cat &gt;
+  =  ^  =   flipping coins
   |  ___|
   | |   |
 </pre>
 
-<select id="mode">
-<option value="business">Business</option>
-<option value="relationship">Relationship</option>
-<option value="yesno">Yes / No</option>
-</select>
+    <select id="mode">
+      <option value="b">Business</option>
+      <option value="r">Relationship</option>
+      <option value="y">Yes / No</option>
+    </select>
 
-<button id="throw">Throw Coins</button>
+    <button onclick="throwCoins()">Throw Coins</button>
 
-<div class="coins" id="coins"></div>
-<div class="hexagram" id="hex1"></div>
-<div class="hexagram" id="hex2"></div>
-<div class="result" id="result"></div>
-</div>
+    <div class="coins" id="coins"></div>
+    <div id="output"></div>
+  </div>
 
 <script>
-// --- KING WEN ORDER ---
-const hexIndex={"111111":1,"000000":2,"010001":3,"100010":4,"010111":5,"111010":6,"000010":7,"010000":8,"110111":9,"111011":10,"000111":11,"111000":12,"101111":13,"111101":14,"000100":15,"001000":16,"100110":17,"011001":18,"110000":19,"000011":20,"101001":21,"100101":22,"100000":23,"000001":24,"111001":25,"100111":26,"100001":27,"011110":28,"010010":29,"101101":30,"001110":31,"011100":32,"001111":33,"111100":34,"000101":35,"101000":36,"101011":37,"110101":38,"001010":39,"010100":40,"110001":41,"100011":42,"111110":43,"011111":44,"000110":45,"011000":46,"010110":47,"011010":48,"101110":49,"011101":50,"001001":51,"100100":52,"110100":53,"001011":54,"001101":55,"101100":56,"110110":57,"011011":58,"010011":59,"110010":60,"110011":61,"001100":62,"101010":63,"010101":64};
-
-// --- FULL 64 HEXAGRAMS (LOCAL, SHORT, REAL) ---
+// --- HEXAGRAM DATA (64, LOCAL) ---
 const H={
-1:{n:"The Creative",b:"This is a time of strong creative force. Initiative, leadership, and decisive action are favored. Act boldly, but stay aligned with a higher purpose rather than ego alone.",r:"Powerful attraction and momentum are present. Take the lead, but avoid domination. Mutual respect keeps passion healthy.",y:"Yes — conditions strongly support action."},
-2:{n:"The Receptive",b:"Progress comes through support, adaptability, and patience. Yielding to circumstances and responding wisely brings success.",r:"Nurturing, listening, and emotional availability deepen the bond. Let the other person lead for now.",y:"Yes — but only through patience."},
-3:{n:"Difficulty at the Beginning",b:"Early confusion, obstacles, or false starts are normal. Persistence and learning through mistakes will establish a solid foundation.",r:"The connection may feel awkward or unstable at first. Give it time before making judgments.",y:"Not yet — allow things to form."},
-4:{n:"Youthful Folly",b:"Inexperience or lack of clarity calls for guidance. Seek advice, training, or mentorship before acting.",r:"Immaturity or misunderstanding is present. Honest communication and humility are required.",y:"No — gain wisdom first."},
-5:{n:"Waiting",b:"External conditions are not ready. Strategic patience and preparation will be rewarded at the right moment.",r:"Do not rush emotional outcomes. Trust that clarity will arrive with time.",y:"Maybe — timing matters."},
-6:{n:"Conflict",b:"Disputes or opposing forces threaten progress. Avoid escalation and choose diplomacy over force.",r:"Tension or power struggles exist. Stepping back prevents damage.",y:"No — resistance is strong."},
-7:{n:"The Army",b:"Organization, discipline, and clear leadership bring success. Act as part of a greater structure.",r:"Shared goals and loyalty strengthen the relationship. Respect roles and boundaries.",y:"Yes — with discipline."},
-8:{n:"Holding Together",b:"Success depends on unity and choosing the right allies. Shared values matter more than convenience.",r:"Commitment and mutual trust deepen the bond.",y:"Yes — alignment is key."},
-9:{n:"Small Taming",b:"Gentle restraint and subtle influence bring progress. Small steps create lasting control.",r:"Affection grows through patience and consistency.",y:"Maybe — proceed gently."},
-10:{n:"Treading",b:"Proceed carefully in sensitive situations. Correct conduct avoids danger.",r:"Respect boundaries and social context.",y:"Yes — if cautious."},
-11:{n:"Peace",b:"Harmony between forces allows growth and prosperity. A favorable time for expansion.",r:"Balance and mutual support create emotional ease.",y:"Yes."},
-12:{n:"Standstill",b:"Progress is blocked. Preserve resources and integrity until conditions change.",r:"Emotional distance or stagnation is present.",y:"No."},
-13:{n:"Fellowship",b:"Open cooperation and shared ideals bring success. Network honestly.",r:"Friendship and openness strengthen bonds.",y:"Yes."},
-14:{n:"Great Possession",b:"Abundance and influence are available. Use power responsibly.",r:"Confidence attracts positive attention.",y:"Yes."},
-15:{n:"Modesty",b:"Humility attracts support and avoids envy. Quiet competence wins.",r:"Respect and balance deepen trust.",y:"Yes."},
-16:{n:"Enthusiasm",b:"Momentum builds quickly. Channel excitement wisely.",r:"Joy and shared excitement are present.",y:"Yes."},
-17:{n:"Following",b:"Adapt to circumstances and follow proven paths.",r:"Go with the natural flow of the relationship.",y:"Yes."},
-18:{n:"Work on the Decayed",b:"Address neglected problems directly to restore stability.",r:"Old issues must be healed.",y:"Maybe."},
-19:{n:"Approach",b:"Opportunity draws near. Prepare to engage constructively.",r:"Warmth and openness increase.",y:"Yes."},
-20:{n:"Contemplation",b:"Pause to observe and gain perspective before acting.",r:"Reflection brings clarity.",y:"Maybe."},
-21:{n:"Biting Through",b:"Decisive action cuts through obstacles. Justice and firmness are required.",r:"Clear boundaries resolve tension.",y:"Yes."},
-22:{n:"Grace",b:"Presentation and refinement matter now. Focus on form as well as substance.",r:"Charm and kindness soften interactions.",y:"Yes."},
-23:{n:"Splitting Apart",b:"Structures are weakening. Withdraw before losses deepen.",r:"Emotional erosion is present.",y:"No."},
-24:{n:"Return",b:"A turning point brings renewal. Start again with clarity.",r:"Reconnection or reconciliation is possible.",y:"Yes."},
-25:{n:"Innocence",b:"Act with sincerity and integrity. Avoid hidden motives.",r:"Pure intentions strengthen trust.",y:"Yes."},
-26:{n:"Great Taming",b:"Great potential is restrained for future use. Discipline builds strength.",r:"Patience deepens respect.",y:"Maybe."},
-27:{n:"Nourishment",b:"Mind what you consume and provide. Resources and habits matter.",r:"Care and emotional feeding are essential.",y:"Maybe."},
-28:{n:"Great Excess",b:"Pressure is unsustainable. Reduce load before collapse.",r:"Imbalance strains connection.",y:"No."},
-29:{n:"The Abyss",b:"Danger repeats. Stay steady, honest, and internally strong.",r:"Deep emotions require courage.",y:"Maybe."},
-30:{n:"The Clinging",b:"Clarity and visibility bring success. Stay aligned with truth.",r:"Shared vision strengthens bonds.",y:"Yes."},
-31:{n:"Influence",b:"Subtle persuasion and attraction guide outcomes.",r:"Mutual attraction is strong.",y:"Yes."},
-32:{n:"Duration",b:"Long-term commitment yields rewards.",r:"Endurance and loyalty matter.",y:"Yes."},
+1:{n:"The Creative",b:"Strong creative power favors leadership and decisive action.",r:"Momentum and attraction are strong; lead without dominating.",y:"Yes."},
+2:{n:"The Receptive",b:"Progress through patience, support, and adaptability.",r:"Nurturing and listening deepen bonds.",y:"Yes, with patience."},
+3:{n:"Difficulty at the Beginning",b:"Early obstacles require persistence.",r:"Give the relationship time to form.",y:"Not yet."},
+4:{n:"Youthful Folly",b:"Seek guidance before acting.",r:"Immaturity requires honesty and humility.",y:"No."},
+5:{n:"Waiting",b:"Preparation and patience bring success.",r:"Do not rush emotional outcomes.",y:"Maybe."},
+6:{n:"Conflict",b:"Avoid escalation and seek compromise.",r:"Power struggles need restraint.",y:"No."},
+7:{n:"The Army",b:"Discipline and organization bring victory.",r:"Shared purpose strengthens bonds.",y:"Yes."},
+8:{n:"Holding Together",b:"Unity and shared values lead to success.",r:"Commitment and trust deepen.",y:"Yes."},
+9:{n:"Small Taming",b:"Gentle restraint yields progress.",r:"Patience grows affection.",y:"Maybe."},
+10:{n:"Treading",b:"Proceed carefully in sensitive matters.",r:"Respect boundaries.",y:"Yes, cautiously."},
+11:{n:"Peace",b:"Harmony allows growth.",r:"Balance and mutual support.",y:"Yes."},
+12:{n:"Standstill",b:"Progress is blocked for now.",r:"Emotional stagnation.",y:"No."},
+13:{n:"Fellowship",b:"Cooperation brings success.",r:"Friendship strengthens love.",y:"Yes."},
+14:{n:"Great Possession",b:"Use abundance responsibly.",r:"Confidence attracts positivity.",y:"Yes."},
+15:{n:"Modesty",b:"Humility avoids conflict.",r:"Respect deepens trust.",y:"Yes."},
+16:{n:"Enthusiasm",b:"Channel excitement wisely.",r:"Shared joy.",y:"Yes."},
+17:{n:"Following",b:"Adapt to circumstances.",r:"Go with the flow.",y:"Yes."},
+18:{n:"Work on the Decayed",b:"Fix neglected issues.",r:"Heal old wounds.",y:"Maybe."},
+19:{n:"Approach",b:"Opportunity draws near.",r:"Warmth increases.",y:"Yes."},
+20:{n:"Contemplation",b:"Pause and reflect.",r:"Gain perspective.",y:"Maybe."},
+21:{n:"Biting Through",b:"Decisive action removes obstacles.",r:"Clear boundaries.",y:"Yes."},
+22:{n:"Grace",b:"Presentation matters.",r:"Kindness softens interaction.",y:"Yes."},
+23:{n:"Splitting Apart",b:"Withdraw before losses deepen.",r:"Emotional erosion.",y:"No."},
+24:{n:"Return",b:"Renewal and fresh start.",r:"Reconnection possible.",y:"Yes."},
+25:{n:"Innocence",b:"Act with sincerity.",r:"Pure intentions.",y:"Yes."},
+26:{n:"Great Taming",b:"Discipline builds strength.",r:"Patience grows respect.",y:"Maybe."},
+27:{n:"Nourishment",b:"Mind habits and resources.",r:"Care is essential.",y:"Maybe."},
+28:{n:"Great Excess",b:"Reduce pressure.",r:"Imbalance strains bonds.",y:"No."},
+29:{n:"The Abyss",b:"Remain steady amid danger.",r:"Deep emotions require courage.",y:"Maybe."},
+30:{n:"The Clinging",b:"Clarity and truth bring success.",r:"Shared vision.",y:"Yes."},
+31:{n:"Influence",b:"Subtle attraction guides outcomes.",r:"Mutual attraction.",y:"Yes."},
+32:{n:"Duration",b:"Long-term commitment pays off.",r:"Endurance matters.",y:"Yes."},
 33:{n:"Retreat",b:"Strategic withdrawal preserves strength.",r:"Space restores balance.",y:"No."},
-34:{n:"Great Power",b:"Strength must be guided by ethics.",r:"Assertiveness should remain respectful.",y:"Yes."},
-35:{n:"Progress",b:"Advancement and recognition are possible.",r:"Optimism grows.",y:"Yes."},
-36:{n:"Darkening of Light",b:"Conceal brilliance to survive adversity.",r:"Protect emotional vulnerability.",y:"No."},
-37:{n:"The Family",b:"Clear roles and values create stability.",r:"Domestic harmony strengthens bonds.",y:"Yes."},
-38:{n:"Opposition",b:"Differences require tolerance.",r:"Misalignment is evident.",y:"No."},
-39:{n:"Obstruction",b:"Delays and obstacles demand patience.",r:"External pressures interfere.",y:"No."},
-40:{n:"Deliverance",b:"Release from tension is near.",r:"Emotional relief arrives.",y:"Yes."},
-41:{n:"Decrease",b:"Simplification restores balance.",r:"Letting go helps healing.",y:"Maybe."},
-42:{n:"Increase",b:"Growth and expansion are supported.",r:"Generosity deepens connection.",y:"Yes."},
-43:{n:"Breakthrough",b:"Truth must be spoken openly.",r:"Honesty clears tension.",y:"Yes."},
-44:{n:"Coming to Meet",b:"Powerful influence appears suddenly. Stay cautious.",r:"Temptation without stability.",y:"No."},
-45:{n:"Gathering",b:"Collective effort brings strength.",r:"Union and community.",y:"Yes."},
-46:{n:"Pushing Upward",b:"Slow, steady growth succeeds.",r:"Trust develops gradually.",y:"Yes."},
-47:{n:"Oppression",b:"Constraints test endurance.",r:"Emotional exhaustion.",y:"No."},
-48:{n:"The Well",b:"Shared resources sustain the group.",r:"Depth and reliability matter.",y:"Yes."},
-49:{n:"Revolution",b:"Radical change is necessary.",r:"Transformation reshapes bonds.",y:"Yes."},
-50:{n:"The Cauldron",b:"Transformation through refinement.",r:"Mutual nourishment.",y:"Yes."},
-51:{n:"The Arousing",b:"Shock awakens awareness.",r:"Sudden events test stability.",y:"Maybe."},
-52:{n:"Keeping Still",b:"Pause restores clarity.",r:"Emotional stillness is required.",y:"No."},
-53:{n:"Development",b:"Gradual progress ensures stability.",r:"Love grows over time.",y:"Yes."},
-54:{n:"Marrying Maiden",b:"Secondary position limits influence.",r:"Unequal dynamic.",y:"No."},
-55:{n:"Abundance",b:"Peak prosperity — act wisely.",r:"Overflow of emotion.",y:"Yes."},
-56:{n:"The Wanderer",b:"Adaptability ensures survival.",r:"Distance or impermanence.",y:"Maybe."},
-57:{n:"Gentle Wind",b:"Persistent influence works best.",r:"Subtle persuasion.",y:"Yes."},
-58:{n:"The Joyous",b:"Open exchange brings success.",r:"Shared happiness.",y:"Yes."},
-59:{n:"Dispersion",b:"Barriers dissolve through clarity.",r:"Release emotional blocks.",y:"Yes."},
+34:{n:"Great Power",b:"Strength must be ethical.",r:"Assertiveness with respect.",y:"Yes."},
+35:{n:"Progress",b:"Advancement and recognition.",r:"Optimism grows.",y:"Yes."},
+36:{n:"Darkening of Light",b:"Protect yourself in adversity.",r:"Guard vulnerability.",y:"No."},
+37:{n:"The Family",b:"Clear roles create stability.",r:"Domestic harmony.",y:"Yes."},
+38:{n:"Opposition",b:"Accept differences.",r:"Misalignment present.",y:"No."},
+39:{n:"Obstruction",b:"Delays require patience.",r:"External pressure.",y:"No."},
+40:{n:"Deliverance",b:"Relief and release.",r:"Emotional easing.",y:"Yes."},
+41:{n:"Decrease",b:"Simplify to restore balance.",r:"Letting go helps.",y:"Maybe."},
+42:{n:"Increase",b:"Growth is supported.",r:"Generosity deepens bonds.",y:"Yes."},
+43:{n:"Breakthrough",b:"Speak truth openly.",r:"Honesty clears tension.",y:"Yes."},
+44:{n:"Coming to Meet",b:"Be cautious of sudden influence.",r:"Unstable attraction.",y:"No."},
+45:{n:"Gathering",b:"Unity brings strength.",r:"Community matters.",y:"Yes."},
+46:{n:"Pushing Upward",b:"Steady growth succeeds.",r:"Trust builds slowly.",y:"Yes."},
+47:{n:"Oppression",b:"Endurance is tested.",r:"Emotional exhaustion.",y:"No."},
+48:{n:"The Well",b:"Shared resources sustain.",r:"Reliability matters.",y:"Yes."},
+49:{n:"Revolution",b:"Radical change is needed.",r:"Transformation occurs.",y:"Yes."},
+50:{n:"The Cauldron",b:"Refinement and nourishment.",r:"Mutual growth.",y:"Yes."},
+51:{n:"The Arousing",b:"Shock awakens awareness.",r:"Sudden change tests stability.",y:"Maybe."},
+52:{n:"Keeping Still",b:"Stillness restores clarity.",r:"Pause emotions.",y:"No."},
+53:{n:"Development",b:"Gradual progress.",r:"Love grows slowly.",y:"Yes."},
+54:{n:"Marrying Maiden",b:"Limited influence.",r:"Unequal dynamic.",y:"No."},
+55:{n:"Abundance",b:"Peak prosperity.",r:"Overflowing emotion.",y:"Yes."},
+56:{n:"The Wanderer",b:"Adaptability is key.",r:"Temporary connection.",y:"Maybe."},
+57:{n:"Gentle Wind",b:"Persistent influence.",r:"Subtle persuasion.",y:"Yes."},
+58:{n:"The Joyous",b:"Open exchange.",r:"Shared happiness.",y:"Yes."},
+59:{n:"Dispersion",b:"Barriers dissolve.",r:"Release blocks.",y:"Yes."},
 60:{n:"Limitation",b:"Boundaries create order.",r:"Clear limits help.",y:"Maybe."},
 61:{n:"Inner Truth",b:"Integrity aligns outcomes.",r:"Trust and sincerity.",y:"Yes."},
-62:{n:"Small Exceeding",b:"Attention to detail prevents error.",r:"Caution is needed.",y:"Maybe."},
-63:{n:"After Completion",b:"Success stabilizes — stay vigilant.",r:"Balance must be maintained.",y:"Yes."},
+62:{n:"Small Exceeding",b:"Caution in details.",r:"Care is needed.",y:"Maybe."},
+63:{n:"After Completion",b:"Success stabilizes.",r:"Maintain balance.",y:"Yes."},
 64:{n:"Before Completion",b:"Final obstacles remain.",r:"Unfinished business.",y:"Not yet."}
 };
-  
-function coin(){return Math.random()<0.5?2:3;}
 
-function throwCoins(){
-  let lines=[],changing=[],raw="";
-  for(let i=0;i<6;i++){
-    let s=coin()+coin()+coin();raw+=s+" ";
-    if(s===6){lines.push(0);changing.push(i);} 
-    else if(s===9){lines.push(1);changing.push(i);} 
-    else if(s===7){lines.push(1);} 
-    else{lines.push(0);} 
+function throwCoins() {
+  const coinsDiv = document.getElementById('coins');
+  const out = document.getElementById('output');
+  const mode = document.getElementById('mode').value;
+
+  let lines = [];
+  let raw = [];
+  let changing = [];
+
+  for (let i = 0; i < 6; i++) {
+    let sum = 0;
+    for (let j = 0; j < 3; j++) sum += Math.random() < 0.5 ? 2 : 3;
+    raw.push(sum);
+    if (sum === 6) { lines.push(0); changing.push(i); }
+    else if (sum === 9) { lines.push(1); changing.push(i); }
+    else if (sum === 7) lines.push(1);
+    else lines.push(0);
   }
-  document.getElementById('coins').textContent=raw.trim();
 
-  const render=(l,c)=>l.slice().reverse().map((v,i)=>{
-    const idx=5-i;
-    return `<div class='line ${c.includes(idx)?"changing":""}'>${v?'━━━━━━━':'━━━ ━━━'}</div>`;
-  }).join('');
+  coinsDiv.textContent = raw.join(' ');
 
-  const k1=hexIndex[lines.join('')];
-  document.getElementById('hex1').innerHTML=render(lines,changing);
+  const primary = parseInt(lines.slice().reverse().join(''), 2) + 1;
+  let html = `<div class="hex"><h3>#${primary} — ${H[primary].n}</h3><p>${H[primary][mode]}</p>`;
 
-  let out=`<strong>Hexagram #${k1} — ${H[k1].n}</strong><br>${H[k1][document.getElementById('mode').value[0]]}`;
+  if (changing.length) {
+    changing.forEach(i => lines[i] = lines[i] ? 0 : 1);
+    const secondary = parseInt(lines.slice().reverse().join(''), 2) + 1;
+    html += `<hr><h3>Changing → #${secondary} — ${H[secondary].n}</h3><p>${H[secondary][mode]}</p>`;
+  }
 
-  if(changing.length){
-    let l2=[...lines];changing.forEach(i=>l2[i]=l2[i]?0:1);
-    const k2=hexIndex[l2.join('')];
-    document.getElementById('hex2').innerHTML=render(l2,[]);
-    out+=`<hr><strong>Changing to #${k2} — ${H[k2].n}</strong><br>${H[k2][document.getElementById('mode').value[0]]}`;
-  } else document.getElementById('hex2').innerHTML="";
-
-  document.getElementById('result').innerHTML=out;
+  html += '</div>';
+  out.innerHTML = html;
 }
-
-document.getElementById('throw').onclick=throwCoins;
 </script>
 </body>
 </html>
