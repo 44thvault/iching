@@ -1,57 +1,38 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Lucky Cat I Ching</title>
-  <style>
-    body {
-      font-family: monospace;
-      background: radial-gradient(circle at top, #1a1d26, #0f1115);
-      color: #f2f2f2;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 16px;
-      max-width: 480px;
-      margin: 0 auto;
-      min-height: 100vh;
-    }
-    .cat {
-      white-space: pre;
-      font-size: clamp(10px, 3.5vw, 14px);
-      line-height: 1.2;
-      margin-bottom: 12px;
-      text-align: center;
-      transition: transform 0.15s ease;
-    }
-    .cat.paw { transform: translateY(-2px) rotate(-1deg); }
-    button, select {
-      background: #ffd54a;
-      border: none;
-      padding: 16px 18px;
-      font-size: 16px;
-      cursor: pointer;
-      margin: 8px 0;
-      width: 100%;
-      max-width: 320px;
-      border-radius: 10px;
-      box-shadow: 0 6px 0 #c9a900;
-    }
-    button:active { transform: translateY(2px); box-shadow: 0 4px 0 #c9a900; }
-    .coins, .hexagram, .result { margin-top: 14px; text-align: center; }
-    .line { font-size: clamp(16px, 5vw, 20px); letter-spacing: 2px; }
-    .coin { display: inline-block; margin: 0 4px; animation: flip 0.6s ease; }
-    @keyframes flip {
-      0% { transform: rotateY(0deg); }
-      50% { transform: rotateY(180deg); }
-      100% { transform: rotateY(360deg); }
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Lucky Cat I Ching</title>
+<style>
+body{
+  font-family: monospace;
+  background:#0f1115;
+  color:#f2f2f2;
+  margin:0;
+  padding:16px;
+  display:flex;
+  justify-content:center;
+}
+.container{max-width:420px;width:100%;text-align:center;}
+.cat{white-space:pre;font-size:12px;line-height:1.1;margin-bottom:12px;}
+select,button{
+  width:100%;padding:16px;margin-top:10px;
+  font-size:16px;border-radius:12px;border:none;
+  background:#ffd54a;box-shadow:0 6px 0 #c9a900;
+}
+button:active{transform:translateY(2px);box-shadow:0 4px 0 #c9a900;}
+.coins{margin-top:14px;font-size:14px;}
+.hexagram{margin-top:14px;}
+.line{font-size:18px;letter-spacing:2px;}
+.changing{color:#ff9;}
+.result{margin-top:12px;font-size:14px;}
+hr{border:none;border-top:1px solid #444;margin:12px 0;}
+</style>
 </head>
 <body>
-
-<div class="cat" id="cat">
+<div class="container">
+<div class="cat">
  /\\_/\\
 ( o   o )  < lucky cat >
  =  ^  =   flipping coins
@@ -60,80 +41,125 @@
 </div>
 
 <select id="mode">
-  <option value="business">Business</option>
-  <option value="relationship">Relationship</option>
-  <option value="yesno">Yes / No</option>
+<option value="business">Business</option>
+<option value="relationship">Relationship</option>
+<option value="yesno">Yes / No</option>
 </select>
 
 <button id="throw">Throw Coins</button>
 
 <div class="coins" id="coins"></div>
-<div class="hexagram" id="hexagram"></div>
+<div class="hexagram" id="hex1"></div>
+<div class="hexagram" id="hex2"></div>
 <div class="result" id="result"></div>
+</div>
 
 <script>
-// --- DATA ---
-const hexagramIndex = {
-  "111111":1,"000000":2,"010001":3,"100010":4,"010111":5,"111010":6,"000010":7,"010000":8,
-  "110111":9,"111011":10,"000111":11,"111000":12,"101111":13,"111101":14,"000100":15,"001000":16,
-  "100110":17,"011001":18,"110000":19,"000011":20,"101001":21,"100101":22,"100000":23,"000001":24,
-  "111001":25,"100111":26,"100001":27,"011110":28,"010010":29,"101101":30,"001110":31,"011100":32,
-  "001111":33,"111100":34,"000101":35,"101000":36,"101011":37,"110101":38,"001010":39,"010100":40,
-  "110001":41,"100011":42,"111110":43,"011111":44,"000110":45,"011000":46,"010110":47,"011010":48,
-  "101110":49,"011101":50,"001001":51,"100100":52,"110100":53,"001011":54,"001101":55,"101100":56,
-  "110110":57,"011011":58,"010011":59,"110010":60,"110011":61,"001100":62,"101010":63,"010101":64
+// --- KING WEN ORDER ---
+const hexIndex={"111111":1,"000000":2,"010001":3,"100010":4,"010111":5,"111010":6,"000010":7,"010000":8,"110111":9,"111011":10,"000111":11,"111000":12,"101111":13,"111101":14,"000100":15,"001000":16,"100110":17,"011001":18,"110000":19,"000011":20,"101001":21,"100101":22,"100000":23,"000001":24,"111001":25,"100111":26,"100001":27,"011110":28,"010010":29,"101101":30,"001110":31,"011100":32,"001111":33,"111100":34,"000101":35,"101000":36,"101011":37,"110101":38,"001010":39,"010100":40,"110001":41,"100011":42,"111110":43,"011111":44,"000110":45,"011000":46,"010110":47,"011010":48,"101110":49,"011101":50,"001001":51,"100100":52,"110100":53,"001011":54,"001101":55,"101100":56,"110110":57,"011011":58,"010011":59,"110010":60,"110011":61,"001100":62,"101010":63,"010101":64};
+
+// --- FULL 64 HEXAGRAMS (LOCAL, SHORT, REAL) ---
+const H={
+1:{n:"The Creative",b:"Initiate boldly.",r:"Strong attraction.",y:"Yes"},
+2:{n:"The Receptive",b:"Support, don’t force.",r:"Nurture patiently.",y:"Yes"},
+3:{n:"Difficulty at the Beginning",b:"Early chaos—persist.",r:"Awkward start.",y:"Not yet"},
+4:{n:"Youthful Folly",b:"Learn first.",r:"Immaturity present.",y:"No"},
+5:{n:"Waiting",b:"Timing matters.",r:"Let it unfold.",y:"Maybe"},
+6:{n:"Conflict",b:"Avoid escalation.",r:"Tension present.",y:"No"},
+7:{n:"The Army",b:"Discipline wins.",r:"Shared purpose.",y:"Yes"},
+8:{n:"Holding Together",b:"Choose allies.",r:"Bond deepens.",y:"Yes"},
+9:{n:"Small Taming",b:"Gentle restraint.",r:"Subtle influence.",y:"Maybe"},
+10:{n:"Treading",b:"Proceed carefully.",r:"Mind boundaries.",y:"Yes"},
+11:{n:"Peace",b:"Prosperity flows.",r:"Harmony.",y:"Yes"},
+12:{n:"Standstill",b:"Pause plans.",r:"Distance grows.",y:"No"},
+13:{n:"Fellowship",b:"Network openly.",r:"Honest connection.",y:"Yes"},
+14:{n:"Great Possession",b:"Abundance.",r:"Confidence.",y:"Yes"},
+15:{n:"Modesty",b:"Stay humble.",r:"Respect grows.",y:"Yes"},
+16:{n:"Enthusiasm",b:"Momentum rising.",r:"Joyful energy.",y:"Yes"},
+17:{n:"Following",b:"Adapt.",r:"Go with flow.",y:"Yes"},
+18:{n:"Work on the Decayed",b:"Fix problems.",r:"Heal issues.",y:"Maybe"},
+19:{n:"Approach",b:"Opportunity nears.",r:"Warmth grows.",y:"Yes"},
+20:{n:"Contemplation",b:"Observe first.",r:"Reflect.",y:"Maybe"},
+21:{n:"Biting Through",b:"Decisive action.",r:"Clear obstacles.",y:"Yes"},
+22:{n:"Grace",b:"Presentation matters.",r:"Charm helps.",y:"Yes"},
+23:{n:"Splitting Apart",b:"Loss imminent.",r:"Erosion.",y:"No"},
+24:{n:"Return",b:"Fresh start.",r:"Reconnection.",y:"Yes"},
+25:{n:"Innocence",b:"Act honestly.",r:"Pure intent.",y:"Yes"},
+26:{n:"Great Taming",b:"Hold power.",r:"Restraint.",y:"Maybe"},
+27:{n:"Nourishment",b:"Mind resources.",r:"Care deeply.",y:"Maybe"},
+28:{n:"Great Excess",b:"Overload risk.",r:"Pressure.",y:"No"},
+29:{n:"The Abyss",b:"Danger—stay true.",r:"Emotional depth.",y:"Maybe"},
+30:{n:"The Clinging",b:"Clarity.",r:"Shared vision.",y:"Yes"},
+31:{n:"Influence",b:"Mutual pull.",r:"Attraction.",y:"Yes"},
+32:{n:"Duration",b:"Long-term effort.",r:"Commitment.",y:"Yes"},
+33:{n:"Retreat",b:"Strategic withdrawal.",r:"Step back.",y:"No"},
+34:{n:"Great Power",b:"Use strength wisely.",r:"Assertiveness.",y:"Yes"},
+35:{n:"Progress",b:"Advance.",r:"Optimism.",y:"Yes"},
+36:{n:"Darkening of Light",b:"Lay low.",r:"Protect heart.",y:"No"},
+37:{n:"The Family",b:"Order structure.",r:"Domestic harmony.",y:"Yes"},
+38:{n:"Opposition",b:"Different paths.",r:"Misalignment.",y:"No"},
+39:{n:"Obstruction",b:"Delays.",r:"Difficulties.",y:"No"},
+40:{n:"Deliverance",b:"Relief comes.",r:"Release tension.",y:"Yes"},
+41:{n:"Decrease",b:"Simplify.",r:"Let go.",y:"Maybe"},
+42:{n:"Increase",b:"Growth.",r:"Generosity.",y:"Yes"},
+43:{n:"Breakthrough",b:"Speak truth.",r:"Confront.",y:"Yes"},
+44:{n:"Coming to Meet",b:"Unexpected force.",r:"Temptation.",y:"No"},
+45:{n:"Gathering",b:"Collect strength.",r:"Union.",y:"Yes"},
+46:{n:"Pushing Upward",b:"Steady rise.",r:"Gradual trust.",y:"Yes"},
+47:{n:"Oppression",b:"Constraint.",r:"Exhaustion.",y:"No"},
+48:{n:"The Well",b:"Shared resource.",r:"Emotional depth.",y:"Yes"},
+49:{n:"Revolution",b:"Radical change.",r:"Break pattern.",y:"Yes"},
+50:{n:"The Cauldron",b:"Transformation.",r:"Nourishing bond.",y:"Yes"},
+51:{n:"The Arousing",b:"Shock awakens.",r:"Sudden event.",y:"Maybe"},
+52:{n:"Keeping Still",b:"Pause.",r:"Stillness.",y:"No"},
+53:{n:"Development",b:"Slow growth.",r:"Gradual love.",y:"Yes"},
+54:{n:"Marrying Maiden",b:"Secondary role.",r:"Unequal dynamic.",y:"No"},
+55:{n:"Abundance",b:"Peak moment.",r:"Overflow.",y:"Yes"},
+56:{n:"The Wanderer",b:"Adapt.",r:"Distance.",y:"Maybe"},
+57:{n:"Gentle Wind",b:"Soft influence.",r:"Persuasion.",y:"Yes"},
+58:{n:"The Joyous",b:"Open exchange.",r:"Happiness.",y:"Yes"},
+59:{n:"Dispersion",b:"Dissolve blocks.",r:"Release.",y:"Yes"},
+60:{n:"Limitation",b:"Set boundaries.",r:"Define limits.",y:"Maybe"},
+61:{n:"Inner Truth",b:"Integrity.",r:"Trust.",y:"Yes"},
+62:{n:"Small Exceeding",b:"Mind details.",r:"Caution.",y:"Maybe"},
+63:{n:"After Completion",b:"Stabilize.",r:"Maintain balance.",y:"Yes"},
+64:{n:"Before Completion",b:"Almost there.",r:"Unfinished.",y:"Not yet"}
 };
 
-const hexagramMeanings = {
-  1:{name:"The Creative",business:"Lead boldly. Momentum favors initiative.",relationship:"Be direct and confident.",yesno:"Yes."},
-  2:{name:"The Receptive",business:"Support and adapt.",relationship:"Nurture and listen.",yesno:"Yes, with patience."},
-  3:{name:"Difficulty at the Beginning",business:"Early chaos, future gain.",relationship:"Awkward start.",yesno:"Not yet."},
-  4:{name:"Youthful Folly",business:"Seek guidance.",relationship:"Learn from mistakes.",yesno:"No."},
-  5:{name:"Waiting",business:"Timing matters.",relationship:"Let it unfold.",yesno:"Maybe."},
-  6:{name:"Conflict",business:"Avoid escalation.",relationship:"Tension present.",yesno:"No."},
-  7:{name:"The Army",business:"Discipline brings success.",relationship:"Shared purpose.",yesno:"Yes."},
-  8:{name:"Holding Together",business:"Choose allies wisely.",relationship:"Commitment strengthens.",yesno:"Yes."}
-};
+function coin(){return Math.random()<0.5?2:3;}
 
-// --- LOGIC ---
-function coin() {
-  return Math.random() < 0.5 ? 2 : 3;
-}
-
-function throwCoins() {
-  if (navigator.vibrate) navigator.vibrate(30);
-
-  const cat = document.getElementById('cat');
-  cat.classList.add('paw');
-  setTimeout(() => cat.classList.remove('paw'), 150);
-
-  const mode = document.getElementById('mode').value;
-  let lines = [];
-  let coinText = '';
-
-  for (let i = 0; i < 6; i++) {
-    const c1 = coin(), c2 = coin(), c3 = coin();
-    const sum = c1 + c2 + c3;
-    const line = (sum === 7 || sum === 9) ? 1 : 0;
-    lines.push(line);
-    coinText += `<span class='coin'>${sum}</span>`;
+function throwCoins(){
+  let lines=[],changing=[],raw="";
+  for(let i=0;i<6;i++){
+    let s=coin()+coin()+coin();raw+=s+" ";
+    if(s===6){lines.push(0);changing.push(i);} 
+    else if(s===9){lines.push(1);changing.push(i);} 
+    else if(s===7){lines.push(1);} 
+    else{lines.push(0);} 
   }
+  document.getElementById('coins').textContent=raw.trim();
 
-  const key = lines.join('');
-  const number = hexagramIndex[key];
-  const hex = hexagramMeanings[number] || {name:"Unknown",business:"",relationship:"",yesno:""};
+  const render=(l,c)=>l.slice().reverse().map((v,i)=>{
+    const idx=5-i;
+    return `<div class='line ${c.includes(idx)?"changing":""}'>${v?'━━━━━━━':'━━━ ━━━'}</div>`;
+  }).join('');
 
-  document.getElementById('coins').innerHTML = coinText;
-  document.getElementById('hexagram').innerHTML = lines.slice().reverse()
-    .map(l => `<div class='line'>${l ? '━━━━━━━' : '━━━ ━━━'}</div>`).join('');
+  const k1=hexIndex[lines.join('')];
+  document.getElementById('hex1').innerHTML=render(lines,changing);
 
-  document.getElementById('result').innerHTML =
-    `<strong>Hexagram #${number} — ${hex.name}</strong><br>${hex[mode]}`;
+  let out=`<strong>Hexagram #${k1} — ${H[k1].n}</strong><br>${H[k1][document.getElementById('mode').value[0]]}`;
+
+  if(changing.length){
+    let l2=[...lines];changing.forEach(i=>l2[i]=l2[i]?0:1);
+    const k2=hexIndex[l2.join('')];
+    document.getElementById('hex2').innerHTML=render(l2,[]);
+    out+=`<hr><strong>Changing to #${k2} — ${H[k2].n}</strong><br>${H[k2][document.getElementById('mode').value[0]]}`;
+  } else document.getElementById('hex2').innerHTML="";
+
+  document.getElementById('result').innerHTML=out;
 }
 
-// --- EVENT ---
-document.getElementById('throw').addEventListener('click', throwCoins);
+document.getElementById('throw').onclick=throwCoins;
 </script>
-
 </body>
 </html>
