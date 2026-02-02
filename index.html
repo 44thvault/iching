@@ -81,24 +81,53 @@
     background: #0b0b0b;
   }
 
-  .changing {
-    color: #ffd84d;
-    font-weight: bold;
-  }
+  .changing { color: #ffd84d; font-weight: bold; }
+
+.lines {
+  margin: 0.8rem auto;
+  width: 180px;
+}
+
+.line {
+  height: 10px;
+  margin: 6px 0;
+}
+
+.line.solid {
+  background: #eaeaea;
+}
+
+.line.broken {
+  display: flex;
+  justify-content: space-between;
+}
+
+.line.broken span {
+  display: block;
+  width: 40%;
+  height: 10px;
+  background: #eaeaea;
+}
+
+.line.changing {
+  background: #ffd84d;
+}
+
+.line.broken.changing span {
+  background: #ffd84d;
+}
 </style>
 </head>
 <body>
   <div class="container">
     <header class="matrix-header">I&nbsp;CHING&nbsp;KITTEN</header>
 
-<pre class="cat">     
-  /\\_/\\
- ( o   o )
-  =  ^  = 
+<pre class="cat">  /\_/\
+ ( o   o )  &lt; lucky cat &gt;
+  =  ^  =   flipping coins
   |  ___|
   | |   |
 </pre>
-
 
     <select id="mode">
       <option value="b">Business</option>
@@ -203,16 +232,32 @@ function throwCoins() {
   coinsDiv.textContent = raw.join(' ');
 
   const primary = parseInt(lines.slice().reverse().join(''), 2) + 1;
-  let html = `<div class="hex"><h3>#${primary} — ${H[primary].n}</h3><p>${H[primary][mode]}</p>`;
 
-  if (changing.length) {
-    changing.forEach(i => lines[i] = lines[i] ? 0 : 1);
-    const secondary = parseInt(lines.slice().reverse().join(''), 2) + 1;
-    html += `<hr><h3>Changing → #${secondary} — ${H[secondary].n}</h3><p>${H[secondary][mode]}</p>`;
-  }
+function renderLines(arr, changingIdx = []) {
+  return arr.map((v, i) => {
+    const isChanging = changingIdx.includes(i);
+    if (v === 1) {
+      return `<div class="line solid ${isChanging ? 'changing' : ''}"></div>`;
+    } else {
+      return `<div class="line broken ${isChanging ? 'changing' : ''}"><span></span><span></span></div>`;
+    }
+  }).reverse().join('');
+}
 
-  html += '</div>';
-  out.innerHTML = html;
+let html = `<div class="hex"><h3>#${primary} — ${H[primary].n}</h3>`;
+html += `<div class="lines">${renderLines(lines, changing)}</div>`;
+html += `<p>${H[primary][mode]}</p>`;
+
+if (changing.length) {
+  changing.forEach(i => lines[i] = lines[i] ? 0 : 1);
+  const secondary = parseInt(lines.slice().reverse().join(''), 2) + 1;
+  html += `<hr><h3>Changing → #${secondary} — ${H[secondary].n}</h3>`;
+  html += `<div class="lines">${renderLines(lines)}</div>`;
+  html += `<p>${H[secondary][mode]}</p>`;
+}
+
+html += '</div>';
+out.innerHTML = html;
 }
 </script>
 </body>
