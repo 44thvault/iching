@@ -41,11 +41,7 @@
     button:active { transform: translateY(2px); box-shadow: 0 4px 0 #c9a900; }
     .coins, .hexagram, .result { margin-top: 14px; text-align: center; }
     .line { font-size: clamp(16px, 5vw, 20px); letter-spacing: 2px; }
-    .coin {
-      display: inline-block;
-      margin: 0 4px;
-      animation: flip 0.6s ease;
-    }
+    .coin { display: inline-block; margin: 0 4px; animation: flip 0.6s ease; }
     @keyframes flip {
       0% { transform: rotateY(0deg); }
       50% { transform: rotateY(180deg); }
@@ -55,12 +51,12 @@
 </head>
 <body>
 
-<div class="cat">
-  /\\_/\\
- ( o   o )   < Lucky Cat >
-  =  ^  =    flipping coins
-  |  ___|
-  | |   |
+<div class="cat" id="cat">
+ /\\_/\\
+( o   o )  < lucky cat >
+ =  ^  =   flipping coins
+ |  ___|
+ | |   |
 </div>
 
 <select id="mode">
@@ -69,14 +65,14 @@
   <option value="yesno">Yes / No</option>
 </select>
 
-<button onclick="throwCoins()">Throw Coins</button>
+<button id="throw">Throw Coins</button>
 
 <div class="coins" id="coins"></div>
 <div class="hexagram" id="hexagram"></div>
 <div class="result" id="result"></div>
 
 <script>
-// Binary (bottom → top) to King Wen number
+// --- DATA ---
 const hexagramIndex = {
   "111111":1,"000000":2,"010001":3,"100010":4,"010111":5,"111010":6,"000010":7,"010000":8,
   "110111":9,"111011":10,"000111":11,"111000":12,"101111":13,"111101":14,"000100":15,"001000":16,
@@ -88,7 +84,56 @@ const hexagramIndex = {
   "110110":57,"011011":58,"010011":59,"110010":60,"110011":61,"001100":62,"101010":63,"010101":64
 };
 
-const hexagramMeanings = 
+const hexagramMeanings = {
+  1:{name:"The Creative",business:"Lead boldly. Momentum favors initiative.",relationship:"Be direct and confident.",yesno:"Yes."},
+  2:{name:"The Receptive",business:"Support and adapt.",relationship:"Nurture and listen.",yesno:"Yes, with patience."},
+  3:{name:"Difficulty at the Beginning",business:"Early chaos, future gain.",relationship:"Awkward start.",yesno:"Not yet."},
+  4:{name:"Youthful Folly",business:"Seek guidance.",relationship:"Learn from mistakes.",yesno:"No."},
+  5:{name:"Waiting",business:"Timing matters.",relationship:"Let it unfold.",yesno:"Maybe."},
+  6:{name:"Conflict",business:"Avoid escalation.",relationship:"Tension present.",yesno:"No."},
+  7:{name:"The Army",business:"Discipline brings success.",relationship:"Shared purpose.",yesno:"Yes."},
+  8:{name:"Holding Together",business:"Choose allies wisely.",relationship:"Commitment strengthens.",yesno:"Yes."}
+};
+
+// --- LOGIC ---
+function coin() {
+  return Math.random() < 0.5 ? 2 : 3;
+}
+
+function throwCoins() {
+  if (navigator.vibrate) navigator.vibrate(30);
+
+  const cat = document.getElementById('cat');
+  cat.classList.add('paw');
+  setTimeout(() => cat.classList.remove('paw'), 150);
+
+  const mode = document.getElementById('mode').value;
+  let lines = [];
+  let coinText = '';
+
+  for (let i = 0; i < 6; i++) {
+    const c1 = coin(), c2 = coin(), c3 = coin();
+    const sum = c1 + c2 + c3;
+    const line = (sum === 7 || sum === 9) ? 1 : 0;
+    lines.push(line);
+    coinText += `<span class='coin'>${sum}</span>`;
+  }
+
+  const key = lines.join('');
+  const number = hexagramIndex[key];
+  const hex = hexagramMeanings[number] || {name:"Unknown",business:"",relationship:"",yesno:""};
+
+  document.getElementById('coins').innerHTML = coinText;
+  document.getElementById('hexagram').innerHTML = lines.slice().reverse()
+    .map(l => `<div class='line'>${l ? '━━━━━━━' : '━━━ ━━━'}</div>`).join('');
+
+  document.getElementById('result').innerHTML =
+    `<strong>Hexagram #${number} — ${hex.name}</strong><br>${hex[mode]}`;
+}
+
+// --- EVENT ---
+document.getElementById('throw').addEventListener('click', throwCoins);
+</script>
 
 </body>
 </html>
